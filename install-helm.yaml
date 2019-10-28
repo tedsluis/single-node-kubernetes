@@ -1,0 +1,10 @@
+#!/usr/bin/env ansible-playbook
+
+- name: install-helm
+  gather_facts: True
+  hosts: 
+    - fedora
+  vars:
+    - helm_version: 'helm-v2.14.0-linux-amd64.tar.gz'
+  roles:
+  - install-helm

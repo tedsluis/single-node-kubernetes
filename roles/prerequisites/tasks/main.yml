@@ -1,0 +1,156 @@
+---
+# tasks file for kubernetes prerequisites
+
+# Disable swap
+- name: "Disable swap."
+  shell: |
+    swapoff -a
+    sed -i 's/\(^.*swap.*$\)/\#DISABLE:\1/g' /etc/fstab
+  become: true
+
+# Open firewall ports
+- name: "Get default firewalld zone."
+  shell: >
+    firewall-cmd --get-default-zone
+  register: default_firewalld_zone
+  become: true
+
+- name: "Open Firewall port in zone {{ default_firewalld_zone.stdout }}." 
+  firewalld:
+    zone: "{{ default_firewalld_zone.stdout }}"
+    port: "{{ item }}/tcp"
+    permanent: yes
+    state: enabled
+  become: true
+  with_items:
+    - 6443
+    - 2379-2380
+    - 10250-10252
+    - 30000-32767
+
+# Docker 
+- name: "Install docker repository."
+  command: dnf config-manager --add-repo https://download.docker.com/linux/fedora/docker-ce.repo
+  become: true
+
+- name: "Create a directories if it does not exist."
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  become: true
+  with_items:
+    - /etc/systemd/system/docker.service.d
+    - /etc/docker
+    
+- name: "Docker deamon settings /etc/docker/daemon.json"
+  template:
+    src: roles/prerequisites/templates/daemon.json.j2
+    dest: /etc/docker/daemon.json
+    owner: root
+    group: root
+    mode: '0644'
+  become: true
+
+# Kubernetes
+- name: "Copy /etc/yum.repos.d/kubernetes.repo"
+  copy:
+    src: 'roles/prerequisites/files/kubernetes.repo'
+    dest: '/etc/yum.repos.d/kubernetes.repo'
+    owner: root
+    group: root
+    mode: 06400
+  become: true
+
+# IP tables
+- name: "Enables alternative iptables legacy."
+  alternatives:
+    name: iptables
+    path: /usr/sbin/iptables-legacy
+  become: true
+
+- name: "Set net.bridge.bridge-nf-call-ip4/6itables"
+  sysctl:
+    name: "{{ item }}"
+    value: "1"
+    sysctl_set: yes
+    state: present
+    reload: yes
+  become: true
+  with_items:
+    - net.bridge.bridge-nf-call-ip6tables
+    - net.bridge.bridge-nf-call-iptables
+    - net.ipv4.conf.all.rp_filter
+
+# Remove packages 
+- name: "Remove invalid docker packages."
+  dnf:
+    name:
+      - docker 
+      - docker-client 
+      - docker-client-latest 
+      - docker-common 
+      - docker-latest 
+      - docker-latest-logrotate 
+      - docker-logrotate 
+      - docker-selinux 
+      - docker-engine-selinux 
+      - docker-engine
+    state: absent
+  become: true
+
+# Install packages  
+- name: "Install prerequisite packages."
+  dnf:
+    name:
+      - libselinux-python
+      - device-mapper-persistent-data 
+      - lvm2
+      - dnf-plugins-core
+      - docker-ce-cli
+      - containerd.io
+      - kubeadm 
+      - kubectl 
+    state: present
+  become: true
+
+- name: "Install Docker package."
+  dnf:
+    name:
+      - docker-ce
+    state: present
+  become: true
+  notify: restart docker
+
+- name: "Install kubelet package."
+  dnf:
+    name:
+      - kubelet
+    state: present
+    disable_excludes: kubernetes
+  become: true
+  notify: restart kubelet
+
+- name: Disable SELinux
+  selinux:
+    state: disabled
+  become: true
+
+# Enable and start services
+- name: "Enable Docker."
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
+  become: true
+
+- name: "Enable Kubelet."
+  systemd:
+    name: kubelet
+    state: started
+    enabled: yes
+  become: true
+
+

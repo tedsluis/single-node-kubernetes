@@ -4,9 +4,10 @@ fedora / Centos
 
 ## steps
 
+Ansible playbooks:
 ```bash
-$ prerequisites.sh
-$ install-k8s.sh    
-$ install-helm.sh  
+$ ./prerequisites.yaml
+$ ./install-k8s.yaml
+$ ./install-helm.yaml
 ``` 
 

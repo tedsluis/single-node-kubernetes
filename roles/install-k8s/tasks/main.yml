@@ -1,0 +1,60 @@
+---
+# tasks file for kubernetes install
+
+# Install Kubernetes
+- name: "Kubeadm init --pod-network-cidr=192.168.0.0/16"
+  shell: |
+    kubeadm init --pod-network-cidr=100.64.0.0/16 #--kubernetes-version=v1.15.5
+  become: true
+
+# Install calico network
+- name: "Install Calico network"
+  shell: |
+    kubectl apply -f https://docs.projectcalico.org/v3.8/manifests/calico.yaml
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+  become: true
+
+# Allow pod deployments on master node
+- name: "Allow pod deployments on master node."
+  shell: |
+    kubectl taint nodes --all node-role.kubernetes.io/master-
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+  become: true
+
+# Deploy metrics
+- name: "Deploy metrics."
+  shell: |
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/aggregated-metrics-reader.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/auth-delegator.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/auth-reader.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-apiservice.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-server-deployment.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-server-service.yaml
+    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/resource-reader.yaml
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+  become: true
+
+# Copy Kubernetes admin credentials
+- name: "Create a directory /root/.kube/ if it does not exist."
+  file:
+    path: /root/.kube
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+  become: true
+
+- name: "Copies Cluster admin credentials to home directory."
+  copy:
+    src: '/etc/kubernetes/admin.conf'
+    remote_src: yes
+    dest: '/root/.kube/config'
+    owner: root
+    group: root
+    mode: 0755
+  become_user: root
+  become: true
+

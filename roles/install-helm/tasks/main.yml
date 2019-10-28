@@ -1,0 +1,53 @@
+
+
+---
+# Install Helm
+
+- name: "Download Helm {{ helm_version }}."
+  get_url:
+    url: 'https://storage.googleapis.com/kubernetes-helm/{{ helm_version }}'
+    dest: '/tmp/{{ helm_version }}'
+    mode: '0440'
+  become: true
+
+- name: "Extract /tmp/{{ helm_version }} into /tmp"
+  unarchive:
+    src: "/tmp/{{ helm_version }}"
+    remote_src: yes
+    dest: '/tmp'
+  become: true
+    
+- name: "Copy Helm to /usr/local/bin"
+  copy:
+    src: '/tmp/linux-amd64/helm'
+    dest: '/usr/local/bin/helm'
+    owner: root
+    group: root
+    mode: 0775
+  become: true
+
+- name: "Copy rbac-config.yaml to /tmp"
+  copy:
+    src: 'roles/install-helm/files/rbac-config.yaml'
+    dest: '/tmp/rbac-config.yaml'
+    owner: root
+    group: root
+    mode: 0775
+  become: true
+
+- name: "Helm init."
+  shell: |
+    #helm init  --service-account tiller --history-max 200
+    helm init --service-account tiller --output yaml | sed 's@apiVersion: extensions/v1beta1@apiVersion: apps/v1@' | sed 's@  replicas: 1@  replicas: 1\n  selector: {"matchLabels": {"app": "helm", "name": "tiller"}}@' | kubectl apply -f -
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+  become: true
+    
+# Helm rbac
+- name: "Deploy Helm RBAC."
+  shell: |
+    kubectl create -f /tmp/rbac-config.yaml
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+  become: true
+

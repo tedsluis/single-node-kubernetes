@@ -1,0 +1,9 @@
+[fedora]
+lenovo
+#msi
+#nuc
+
+[fedora:vars]
+ansible_user=root
+accounts='["root", "tedsluis"]'
+ansible_python_interpreter=/usr/bin/python3

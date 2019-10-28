@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+
+- name: prerequisites
+  gather_facts: True
+  hosts: 
+  - fedora
+  roles:
+  - prerequisites
