@@ -1,0 +1,35 @@
+# Get home directory
+- name: "Get home directory {{ item }}."
+  shell: >
+    getent passwd {{ item }} | cut -d: -f6
+  changed_when: false
+  register: user_home
+
+# Copy credentials
+- name: "Add aliasses and kubectl bash completion to {{ user_home.stdout }}/.bashrc"
+  lineinfile:
+    dest: "{{ user_home.stdout }}/.bashrc"
+    regexp: '^\s*{{ line_item.match }}'
+    state: present
+    line: "{{ line_item.add }}"
+  become: true
+  with_items:
+    - { match: source\s<\(kubectl\scompletion, add: source <(kubectl completion bash) }
+    - { match: alias\skc=,                     add: alias kc="kubectl" }
+    - { match: alias\skgp=,                    add: alias kgp="kubectl get pods" }
+    - { match: alias\skgs=,                    add: alias kgs="kubectl get svc" }
+    - { match: alias\skgc=,                    add: alias kgc="kubectl get componentstatuses" }
+    - { match: alias\skccc=,                   add: alias kccc="kubectl config current-context" }
+    - { match: alias\skcuc=,                   add: alias kcuc="kubectl config use-context" }
+    - { match: alias\skcgc=,                   add: alias kcgc="kubectl config get-contexts" }
+  loop_control:
+    loop_var: line_item
+    
+# Change file ownership, group and permissions
+- name: Change file ownership, group and permissions .bashrc
+  file:
+    path: "{{ user_home.stdout }}/.bashrc"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: '0644'
+  become: true

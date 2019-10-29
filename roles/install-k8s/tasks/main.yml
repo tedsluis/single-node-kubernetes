@@ -40,3 +40,9 @@
 # Copy Kubernetes admin credentials
 - include: copy-credentials.yml
   loop: "{{ accounts }}"
+  
+# Add stuff to .bashrc 
+- include: add-to-bashrc.yml
+  loop: "{{ accounts }}"
+
+
