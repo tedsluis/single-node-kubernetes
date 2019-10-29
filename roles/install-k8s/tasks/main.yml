@@ -38,24 +38,5 @@
   become: true
 
 # Copy Kubernetes admin credentials
-- name: "Create a directory .kube if it does not exist."
-  file:
-    path: "/{{ item }}/.kube"
-    state: directory
-    mode: '0755'
-    owner: "{{ item }}"
-    group: "{{ item }}"
-  become: true
-  with_items: "{{ accounts }}"
-
-- name: "Copies Cluster admin credentials to home directory."
-  copy:
-    src: '/etc/kubernetes/admin.conf'
-    remote_src: yes
-    dest: "/{{ item }}/.kube/config"
-    owner: "{{ item }}"
-    group: "{{ item }}"
-    mode: 0750
-  become: true
-  with_items: "{{ accounts }}"
-
+- include: copy-credentials.yml
+  loop: "{{ accounts }}"
