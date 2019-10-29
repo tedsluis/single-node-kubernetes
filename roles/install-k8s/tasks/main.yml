@@ -38,23 +38,24 @@
   become: true
 
 # Copy Kubernetes admin credentials
-- name: "Create a directory /root/.kube/ if it does not exist."
+- name: "Create a directory .kube if it does not exist."
   file:
-    path: /root/.kube
+    path: "/{{ item }}/.kube"
     state: directory
     mode: '0755'
-    owner: root
-    group: root
+    owner: "{{ item }}"
+    group: "{{ item }}"
   become: true
+  with_items: "{{ accounts }}"
 
 - name: "Copies Cluster admin credentials to home directory."
   copy:
     src: '/etc/kubernetes/admin.conf'
     remote_src: yes
-    dest: '/root/.kube/config'
-    owner: root
-    group: root
-    mode: 0755
-  become_user: root
+    dest: "/{{ item }}/.kube/config"
+    owner: "{{ item }}"
+    group: "{{ item }}"
+    mode: 0750
   become: true
+  with_items: "{{ accounts }}"
 
