@@ -26,13 +26,15 @@
 # Deploy metrics
 - name: "Deploy metrics."
   shell: |
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/aggregated-metrics-reader.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/auth-delegator.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/auth-reader.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-apiservice.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-server-deployment.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/metrics-server-service.yaml
-    kubectl create -f https://github.com/kubernetes-incubator/metrics-server/raw/master/deploy/1.8%2B/resource-reader.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/aggregated-metrics-reader.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/auth-delegator.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/auth-reader.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/metrics-apiservice.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/metrics-server-service.yaml
+    kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/deploy/1.8%2B/resource-reader.yaml
+   #kubectl create -f https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/metrics-server-deployment.yaml
+   curl -s https://raw.githubusercontent.com/kubernetes-incubator/metrics-server/master/deploy/1.8%2B/metrics-server-deployment.yaml \
+    | sed 's#imagePullPolicy: Always#imagePullPolicy: Always\n        args:\n        - --kubelet-insecure-tls\n        - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname#g;' | kubectl apply -f -
   environment:
     KUBECONFIG: '/etc/kubernetes/admin.conf'
   become: true
