@@ -1,0 +1,38 @@
+---
+namespace:
+  ted-prod:
+    label_team: ted
+    label_project: test
+    label_requestor: tedsluis
+    label_environment: production
+    request_cpu: 1
+    request_mem: 1Gi
+    limits_cpu: 2
+    limits_memory: 2Gi
+    container_max_cpu: 800m
+    container_max_memory: 1Gi
+    configmaps: 20
+    pods: 40
+    persistentvolumeclaims: 10
+    replicationcontrollers: 20
+    resourcequotas: 10
+    secrets: 20
+    services: 20
+  ted-dev:
+    label_team: ted
+    label_project: test
+    label_requestor: tedsluis
+    label_environment: development
+    request_cpu: 1
+    request_mem: 1Gi
+    limits_cpu: 2
+    limits_memory: 2Gi
+    container_max_cpu: 800m
+    container_max_memory: 1Gi
+    configmaps: 20
+    pods: 40
+    persistentvolumeclaims: 10
+    replicationcontrollers: 20
+    resourcequotas: 10
+    secrets: 20
+    services: 20
