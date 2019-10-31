@@ -3,6 +3,6 @@
 - name: install-k8s
   gather_facts: True
   hosts: 
-  - fedora
+  - all
   roles:
   - install-k8s

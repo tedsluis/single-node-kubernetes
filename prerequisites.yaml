@@ -3,6 +3,6 @@
 - name: prerequisites
   gather_facts: True
   hosts: 
-  - fedora
+  - all
   roles:
   - prerequisites
