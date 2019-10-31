@@ -1,0 +1,8 @@
+# Execute manifest
+
+- name: "Execute '/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml' manifest." 
+  shell: | 
+    kubectl apply -f /tmp/manifests/{{ date_time}}-namespace-{{ item.key }}.yaml -n {{ item.key }} 
+  become: true
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'

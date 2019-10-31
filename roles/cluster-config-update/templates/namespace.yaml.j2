@@ -1,0 +1,49 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ item.key }}
+  labels:
+    team: {{ item.value.label_team }}
+    project: {{ item.value.label_project }}
+    requestor: {{ item.value.label_requestor }}
+    environment: {{ item.value.label_environment }}
+---
+apiVersion: v1
+kind: ResourceQuota
+metadata:
+  name: rc-{{ item.key }}
+spec:
+  hard:
+    requests.cpu: {{ item.value.request_cpu }}
+    requests.memory: {{ item.value.request_mem }}
+    limits.cpu: {{ item.value.limits_cpu }}
+    limits.memory: {{ item.value.limits_memory }}
+    configmaps: {{ item.value.configmaps }}
+    pods: {{ item.value.pods }}
+    persistentvolumeclaims: {{ item.value.persistentvolumeclaims }}
+    replicationcontrollers: {{ item.value.replicationcontrollers }}
+    resourcequotas: {{ item.value.resourcequotas }}
+    secrets: {{ item.value.secrets }}
+    services: {{ item.value.services }}
+---
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: lr-{{ item.key }}
+spec:
+  limits:
+  - default:
+      cpu: "400m"
+      memory: "400Mi"
+    defaultRequest:
+      cpu: "200m"
+      memory: "200Mi"
+    max:
+      cpu: {{ item.value.container_max_cpu }}
+      memory: {{ item.value.container_max_memory }}
+    min:
+      cpu: "50m"
+      memory: "20Mi"
+    type: Container
+---

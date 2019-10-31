@@ -1,0 +1,13 @@
+# Create manifest from templates
+
+- name: "Create '/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml' manifest from template."
+  template:
+    src: roles/cluster-config-update/templates/namespace.yaml.j2
+    dest: "/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml"
+    owner: root
+    group: root
+    mode: '0664'
+  vars:
+    ns: "{{ item.key }}"
+  become: true
+

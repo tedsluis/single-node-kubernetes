@@ -1,0 +1,29 @@
+# Create/update cluster configuration
+
+- set_fact:
+    date_time: "{{ ansible_date_time.date }}T{{ ansible_date_time.hour }}-{{ ansible_date_time.minute }}-{{ ansible_date_time.second }}"
+    validate_error: 0
+
+- name: "Create a directory, if it does not exist."
+  file:
+    path: '/tmp/manifests'
+    state: directory
+    mode: '0774'
+    owner: root
+    group: root
+  become: true
+
+- include: create-manifest-from-template.yml
+  loop: "{{ namespace | dict2items }}"
+
+- include: validate-manifest.yml
+  loop: "{{ namespace | dict2items }}"
+
+- name: "Validation successful?"
+  fail: 
+    msg: "Attention: {{ validate_error }} validation error(s) occured!!!"
+  when: validate_error != 0
+
+- include: execute-manifest.yml
+  loop: "{{ namespace | dict2items }}"
+

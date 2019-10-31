@@ -1,0 +1,21 @@
+# Validate manifest
+
+- name: "Validate '/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml' manifest." 
+  shell: | 
+    kubectl apply -f /tmp/manifests/{{ date_time}}-namespace-{{ item.key }}.yaml -n {{ item.key }} --server-dry-run=true --validate  
+  become: true
+  ignore_errors: yes
+  no_log: True
+  register: command_output
+  environment:
+    KUBECONFIG: '/etc/kubernetes/admin.conf'
+
+- name: "Standard output: '/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml' template."
+  debug: msg="standard output:{{command_output.stdout}}"
+
+- name: "Standard error: '/tmp/manifests/{{ date_time }}-namespace-{{ item.key }}.yaml' template."
+  debug: msg="standard error:{{command_output.stderr}}"
+  when: command_output.stderr != ""
+
+- name: "Increment validate_error variable: {{ validate_error | int +1 }}"
+  set_fact: validate_error={{ validate_error | int + 1 }}

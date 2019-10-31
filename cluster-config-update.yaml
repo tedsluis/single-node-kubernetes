@@ -1,0 +1,8 @@
+#!/usr/bin/env ansible-playbook
+
+- name: cluster-config-update
+  gather_facts: True
+  hosts: 
+  - all
+  roles:
+  - cluster-config-update
