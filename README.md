@@ -12,6 +12,13 @@ $ ./install-helm.yaml
 ``` 
 Run them in this order.
 
+## Configure namespaces
+
+edit 'group_vars/all' and run:
+```bash
+$ ./cluster-config-update.yaml
+```
+
 ## Add to .bashrc:
 
 kubectl aliasses
